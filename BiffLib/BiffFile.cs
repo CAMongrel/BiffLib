@@ -159,6 +159,7 @@ namespace BiffLib
     public class ResourceEntry
     {
         public int ID;
+        public string Name;
         public ResourceType Type;
         public byte[] Data;
     }
@@ -168,6 +169,7 @@ namespace BiffLib
         private string Filename;
         private BiffFileHeader Header;
         private ResourceTableEntry[] Table;
+        private BiffFileEntry biffEntry;
 
         private Dictionary<int, int> TableIDLookup;
         private Dictionary<int, ResourceEntry> CachedResources;
@@ -194,7 +196,7 @@ namespace BiffLib
             Table = null;
 
             KeyFile keyFile = new KeyFile(keyfilename);
-            BiffFileEntry biffEntry = keyFile.GetBiffFileEntry(Path.GetFileName(filename));
+            biffEntry = keyFile.GetBiffFileEntry(Path.GetFileName(filename));
 
             using (BinaryReader reader = new BinaryReader(File.OpenRead(filename)))
             {
@@ -264,6 +266,8 @@ namespace BiffLib
                     reader.BaseStream.Seek(Table[i].Offset, SeekOrigin.Begin);
                     entry.Data = reader.ReadBytes(Table[i].Size);
 
+                    entry.Name = Table[i].Name;
+
                     CachedResources.Add(Table[i].ID, entry);
                 }
             }
@@ -323,6 +327,8 @@ namespace BiffLib
 
                     reader.BaseStream.Seek(tableEntry.Offset, SeekOrigin.Begin);
                     entry.Data = reader.ReadBytes(tableEntry.Size);
+
+                    entry.Name = tableEntry.Name;
 
                     if (ShouldCache)
                         CachedResources.Add(tableEntry.ID, entry);

@@ -1,6 +1,7 @@
 ﻿using BiffLib;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -54,6 +55,102 @@ namespace unbiff
             Console.WriteLine("{0} entries in the file", table.Length);
         }
 
+        private static void HandleExtractCommand(string[] args)
+        {
+            string iParam = null;
+            string oParam = null;
+
+            int fnStart = 0;
+            if (args[0].StartsWith("-i"))
+            {
+                iParam = args[1];
+                fnStart += 2;
+            } else if (args[0].StartsWith("-o"))
+            {
+                oParam = args[1];
+                fnStart += 2;
+            }
+            if (args[2].StartsWith("-i"))
+            {
+                iParam = args[3];
+                fnStart += 2;
+            } else if (args[2].StartsWith("-o"))
+            {
+                oParam = args[3];
+                fnStart += 2;
+            }
+
+            if (oParam == null)
+                oParam = Directory.GetCurrentDirectory();
+
+            string filename = args[fnStart];
+
+            string keyfile = null;
+            if (args.Length >= fnStart + 2)
+                keyfile = args[2];
+
+            int id = -1;
+            if (int.TryParse(iParam, out id) == false)
+            {
+                PrintHelp();
+                Console.WriteLine();
+                Console.WriteLine("Error: Invalid value for param 'i': Must be an integer");
+                return;
+            }
+
+            BiffFile file = new BiffFile(filename, keyfile);
+            ResourceEntry entry = file[id];
+            if (entry == null)
+            {
+                PrintHelp();
+                Console.WriteLine();
+                Console.WriteLine("Error: ID '{0}' does not exist in BIFF file", id.ToString());
+                return;
+            }
+
+            File.WriteAllBytes(Path.Combine(oParam, entry.Name), entry.Data);
+            Console.WriteLine("{0} bytes written to '{1}'", entry.Data.Length, Path.Combine(oParam, entry.Name));
+        }
+
+        private static void HandleDumpCommand(string[] args)
+        {
+            string oParam = null;
+
+            int fnStart = 0;
+            if (args[0].StartsWith("-o"))
+            {
+                oParam = args[1];
+                fnStart += 2;
+            }
+
+            if (oParam == null)
+                oParam = Directory.GetCurrentDirectory();
+
+            string filename = args[fnStart];
+
+            string keyfile = null;
+            if (args.Length >= fnStart + 2)
+                keyfile = args[2];
+
+            BiffFile file = new BiffFile(filename, keyfile);
+            file.ShouldCache = false;
+            ResourceTableEntry[] table = file.GetResourceTableCopy();
+            for (int i = 0; i < table.Length; i++)
+            {
+                ResourceEntry entry = file[table[i].ID];
+                if (entry == null)
+                {
+                    Console.WriteLine("Skipping file {0} due to the entry being invalid", i);
+                    continue;
+                }
+
+                Console.WriteLine("Writing file {0} of {1}", i, table.Length);
+                File.WriteAllBytes(Path.Combine(oParam, entry.Name), entry.Data);
+            }
+
+            Console.WriteLine("{0} files written to '{1}'", table.Length, oParam);
+        }
+
         static void Main(string[] args)
         {
             if (args.Length < 2)
@@ -71,9 +168,11 @@ namespace unbiff
                     break;
 
                 case "x":
+                    HandleExtractCommand(args);
                     break;
 
                 case "d":
+                    HandleDumpCommand(args);
                     break;
             }
         }
