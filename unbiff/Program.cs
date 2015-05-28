@@ -60,23 +60,23 @@ namespace unbiff
             string iParam = null;
             string oParam = null;
 
-            int fnStart = 0;
-            if (args[0].StartsWith("-i"))
+            int fnStart = 1;
+            if (args[1].StartsWith("-i"))
             {
-                iParam = args[1];
+                iParam = args[2];
                 fnStart += 2;
-            } else if (args[0].StartsWith("-o"))
+            } else if (args[1].StartsWith("-o"))
             {
-                oParam = args[1];
+                oParam = args[2];
                 fnStart += 2;
             }
-            if (args[2].StartsWith("-i"))
+            if (args[3].StartsWith("-i"))
             {
-                iParam = args[3];
+                iParam = args[4];
                 fnStart += 2;
-            } else if (args[2].StartsWith("-o"))
+            } else if (args[3].StartsWith("-o"))
             {
-                oParam = args[3];
+                oParam = args[4];
                 fnStart += 2;
             }
 
@@ -87,7 +87,7 @@ namespace unbiff
 
             string keyfile = null;
             if (args.Length >= fnStart + 2)
-                keyfile = args[2];
+                keyfile = args[fnStart + 1];
 
             int id = -1;
             if (int.TryParse(iParam, out id) == false)
@@ -116,10 +116,10 @@ namespace unbiff
         {
             string oParam = null;
 
-            int fnStart = 0;
-            if (args[0].StartsWith("-o"))
+            int fnStart = 1;
+            if (args[1].StartsWith("-o"))
             {
-                oParam = args[1];
+                oParam = args[2];
                 fnStart += 2;
             }
 
@@ -130,7 +130,7 @@ namespace unbiff
 
             string keyfile = null;
             if (args.Length >= fnStart + 2)
-                keyfile = args[2];
+                keyfile = args[fnStart + 1];
 
             BiffFile file = new BiffFile(filename, keyfile);
             file.ShouldCache = false;
