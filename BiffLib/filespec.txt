@@ -1,5 +1,45 @@
 ﻿Taken from: http://witcher.wikia.com/wiki/KEY_BIF_V1.1_format
 
+ Header Edit
+Offset ↓	Size ↓	Type ↓	Description
+0 	4 	CHAR 	Signature ("KEY ")
+4 	4 	CHAR 	Version ("V1.1")
+8 	4 	DWORD 	Number of entries in FILETABLE.
+12 	4 	DWORD 	Number of entries in KEYTABLE.
+16 	4 	NULL 	
+20 	4 	DWORD 	Offset to FILETABLE (0x440000).
+24 	4 	DWORD 	Offset to KEYTABLE.
+28 	4 	DWORD 	Build year (less 1900).
+32 	4 	DWORD 	Build day
+36 	32 	NULL 	
+Filetable Edit
+
+(size = 12 * Number of entries)
+Filetable Entry Edit
+Offset ↓	Size ↓	Type ↓	Description
+0 	4 	DWORD 	BIF Filesize
+4 	4 	DWORD 	Offset To BIF name
+8 	4 	DWORD 	Size of BIF name
+Nametable Edit
+
+Contains packed strings of BIF names.
+Keytable Edit
+
+(size = 26 * number of entries)
+Keytable Entry Edit
+Offset ↓	Size ↓	Type ↓	Description
+0 	16 		Null-padded string Resource Name (sans extension).
+16 	2 	WORD 	Resource Type
+18 	4 	DWORD 	Resource ID
+22 	4 	DWORD 	Flags (BIF index is now in this value, (flags & 0xFFF00000) >> 20). The rest appears to define 'fixed' index. 
+
+======================================================================
+======================================================================
+======================================================================
+======================================================================
+======================================================================
+======================================================================
+
 BIF v1.1 File Format Edit
 
 The BIF v1.1 file format is organized as follows

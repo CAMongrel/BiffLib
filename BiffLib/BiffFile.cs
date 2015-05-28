@@ -138,7 +138,7 @@ namespace BiffLib
         key = 0x270F,
     }
 
-    struct FileHeader
+    struct BiffFileHeader
     {
         public string Signature;
         public string Version;
@@ -153,6 +153,7 @@ namespace BiffLib
         public int Offset;
         public int Size;
         public ResourceType Type;
+        public string Name;
     }
 
     public class ResourceEntry
@@ -165,7 +166,7 @@ namespace BiffLib
     public class BiffFile
     {
         private string Filename;
-        private FileHeader Header;
+        private BiffFileHeader Header;
         private ResourceTableEntry[] Table;
 
         private Dictionary<int, int> TableIDLookup;
@@ -177,19 +178,23 @@ namespace BiffLib
         /// Opens a biff file and reads the header and resource table information
         /// </summary>
         /// <param name="filename"></param>
-        public BiffFile(string filename)
+        /// <param name="keyfile">Can be null</param>
+        public BiffFile(string filename, string keyfilename)
         {
             Filename = filename;
 
             TableIDLookup = new Dictionary<int, int>();
             CachedResources = new Dictionary<int, ResourceEntry>();
-            Header = new FileHeader();
+            Header = new BiffFileHeader();
             Header.Signature = "UNKW";
             Header.Version = "";
             Header.ResCount = 0;
             Header.ResTableOffset = 0;
 
             Table = null;
+
+            KeyFile keyFile = new KeyFile(keyfilename);
+            BiffFileEntry biffEntry = keyFile.GetBiffFileEntry(Path.GetFileName(filename));
 
             using (BinaryReader reader = new BinaryReader(File.OpenRead(filename)))
             {
@@ -223,6 +228,12 @@ namespace BiffLib
                     Table[i].Offset = reader.ReadInt32();
                     Table[i].Size = reader.ReadInt32();
                     Table[i].Type = (ResourceType)reader.ReadInt16();
+                    Table[i].Name = Table[i].ID.ToString();
+                    if (biffEntry != null && biffEntry.ResourceNames.ContainsKey(Table[i].ID))
+                    {
+                        Table[i].Name = biffEntry.ResourceNames[Table[i].ID];
+                    }
+                    Table[i].Name += "." + Table[i].Type;
                     reader.ReadInt16(); // NULL
 
                     TableIDLookup.Add(Table[i].ID, i);
@@ -235,7 +246,7 @@ namespace BiffLib
         /// 
         /// WARNING: Might take a long time and consume a lot of memory. Use with caution
         /// </summary>
-        public void ReadAllResouces()
+        public void ReadAllResources()
         {
             if (Table == null)
                 return;
@@ -275,6 +286,7 @@ namespace BiffLib
                 result[i].Offset = Table[i].Offset;
                 result[i].Size = Table[i].Size;
                 result[i].Type = Table[i].Type;
+                result[i].Name = Table[i].Name;
             }
             return result;
         }

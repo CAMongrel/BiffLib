@@ -15,7 +15,7 @@ namespace unbiff
             Console.WriteLine("Copyright (c) 2015 by Henning Thoele");
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("\tunbif <command> <parameters> <biff_file>");
+            Console.WriteLine("\tunbif <command> <parameters> <biff_file> [key_file]");
             Console.WriteLine();
             Console.WriteLine("Commands:");
             Console.WriteLine("\tl: List entries in BIFF file");
@@ -25,6 +25,9 @@ namespace unbiff
             Console.WriteLine("Parameters:");
             Console.WriteLine("\t-i <int>: Used with 'x'. Specify resource ID to extract");
             Console.WriteLine("\t-o <string>: Used with 'x' and 'd'. Specify output folder");
+            Console.WriteLine();
+            Console.WriteLine("\tbiff_file: The .bif file to open");
+            Console.WriteLine("\tkey_file: Optional key file which references the bif file and provides filename information. If no key file is given, the bif file export produces filename based on the ID.");
         }
 
         private static void HandleListCommand(string[] args)
@@ -38,11 +41,15 @@ namespace unbiff
                 return;
             }
 
-            BiffFile file = new BiffFile(filename);
+            string keyfile = null;
+            if (args.Length == 3)
+                keyfile = args[2];
+
+            BiffFile file = new BiffFile(filename, keyfile);
             ResourceTableEntry[] table = file.GetResourceTableCopy();
             for (int i = 0; i < table.Length; i++)
             {
-                Console.WriteLine("{0}\t:\t{1}", table[i].ID, table[i].Type);
+                Console.WriteLine("{0}\t:\t{1}\t({2} bytes)", table[i].ID, table[i].Name, table[i].Size);
             }
             Console.WriteLine("{0} entries in the file", table.Length);
         }
